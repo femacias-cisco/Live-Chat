@@ -156,37 +156,32 @@
             msgDiv.scrollTop = msgDiv.scrollHeight;
         }
 
+        function saveMessage(sender, text) {
+            var history = JSON.parse(localStorage.getItem('chat_messages') || '[]');
+            history.push({sender: sender, text: text});
+            localStorage.setItem('chat_messages', JSON.stringify(history));
+        }
+
+        function renderHistory() {
+            var history = JSON.parse(localStorage.getItem('chat_messages') || '[]');
+            history.forEach(function(m) {
+                var cls = m.sender === 'You' ? 'msg-user' : 'msg-bot';
+                document.getElementById('messages').innerHTML += `<div class="${cls}"><b>${m.sender}:</b> ${m.text}</div>`;
+            });
+            scrollToBottom();
+        }
+
         IMI.ICMessaging.getInstance().setICMessagingReceiver({
             onMessageReceived: function (message) {
-                document.getElementById('messages').innerHTML += `<div class="msg-bot"><b>Bot:</b> ${message.getMessage()}</div>`;
+                var text = message.getMessage();
+                document.getElementById('messages').innerHTML += `<div class="msg-bot"><b>Bot:</b> ${text}</div>`;
+                saveMessage('Bot', text);
                 scrollToBottom();
             },
             onConnectionStatusChanged: function(status) {
                 console.log('Status:', status);
-                if (status === IMI.ICConnectionStatus.Connected) {
-                    var savedThread = localStorage.getItem('active_thread_id');
-                    if (savedThread) {
-                        activeThread = new IMI.ICThread();
-                        activeThread.setId(savedThread);
-                        loadHistory(savedThread);
-                    }
-                }
             }
         });
-
-        function loadHistory(threadId) {
-            IMI.ICMessaging.getInstance().fetchMessages(threadId, new Date(), 20, {
-                onSuccess: function(msgs) {
-                    document.getElementById('messages').innerHTML = '';
-                    msgs.reverse().forEach(function(m) {
-                        var isUser = m.getOutgoing();
-                        document.getElementById('messages').innerHTML += `<div class="${isUser ? 'msg-user' : 'msg-bot'}"><b>${isUser ? 'You' : 'Bot'}:</b> ${m.getMessage()}</div>`;
-                    });
-                    scrollToBottom();
-                },
-                onFailure: function(err) { console.error('fetchMessages error:', err); }
-            });
-        }
 
         function initChat() {
             if (IMI.IMIconnect.isRegistered()) {
@@ -209,6 +204,7 @@
             IMI.ICMessaging.getInstance().publishMessage(msg, {
                 onSuccess: () => {
                     document.getElementById('messages').innerHTML += `<div class="msg-user"><b>You:</b> ${text}</div>`;
+                    saveMessage('You', text);
                     document.getElementById('msg-input').value = '';
                     scrollToBottom();
                 }
@@ -235,7 +231,15 @@
             win.style.display = (win.style.display === 'none') ? 'flex' : 'none';
         }
 
-        window.onload = initChat;
+        window.onload = function() {
+            var savedThread = localStorage.getItem('active_thread_id');
+            if (savedThread) {
+                activeThread = new IMI.ICThread();
+                activeThread.setId(savedThread);
+            }
+            renderHistory();
+            initChat();
+        };
         window.onbeforeunload = () => IMI.IMIconnect.shutdown();
     </script>
 </body>
