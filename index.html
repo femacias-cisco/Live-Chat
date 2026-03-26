@@ -1,58 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Assets Migration and Creation Agent</title>
     <style>
-        :root { --cisco-blue: #005073; }
-        body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
-        
+        :root {
+            --cisco-blue: #005073;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+        }
+
         /* Chat Window */
         #chat-window {
-            display: none; position: fixed; bottom: 100px; right: 30px; 
-            width: 350px; height: 500px; background: white; 
-            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
-            display: flex; flex-direction: column; overflow: hidden;
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        .header { background: var(--cisco-blue); color: white; padding: 15px; font-weight: bold; display: flex; align-items: center; }
-        .header img { width: 30px; height: 30px; margin-right: 10px; border-radius: 50%; background: white; }
-        
-        #messages {
-            flex: 1; overflow-y: auto; padding: 15px; background: #fafafa;
-            display: flex; flex-direction: column; min-height: 0;
-        }
-        
-        .msg-bot, .msg-user { max-width: 85%; padding: 8px 12px; border-radius: 15px; margin: 5px 0; word-wrap: break-word; }
-        .msg-bot { background: #e9ecef; align-self: flex-start; }
-        .msg-user { background: var(--cisco-blue); color: white; align-self: flex-end; }
 
-        .input-area { padding: 10px; border-top: 1px solid #ddd; display: flex; flex-shrink: 0; }
-        input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: var(--cisco-blue); color: white; border: none; padding: 8px 15px; margin-left: 5px; border-radius: 4px; cursor: pointer; }
+        .header {
+            background: var(--cisco-blue);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .header img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .msg-bot,
+        .msg-user {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 15px;
+            margin: 5px 0;
+            word-wrap: break-word;
+        }
+
+        .msg-bot {
+            background: #e9ecef;
+            align-self: flex-start;
+        }
+
+        .msg-user {
+            background: var(--cisco-blue);
+            color: white;
+            align-self: flex-end;
+        }
+
+        .input-area {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background: var(--cisco-blue);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
         /* Chat Bubble */
         #chat-bubble {
-            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; 
-            background: var(--cisco-blue); color: white; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--cisco-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 
 <body>
     <div id="chat-bubble" onclick="toggleChat()">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
+            <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+        </svg>
     </div>
 
     <div id="chat-window">
         <div class="header">
-            <img src="https://studio.aiagent-us1.cisco.com/static/assets/img/bot-logo/default-virtualagent.svg" alt="Logo">
+            <img src="https://studio.aiagent-us1.cisco.com/static/assets/img/bot-logo/default-virtualagent.svg"
+                alt="Logo">
             Assets Migration Agent
         </div>
         <div id="messages"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="Ask about assets..." onkeydown="if(event.key==='Enter') sendMessage()">
+            <input type="text" id="msg-input" placeholder="Ask about assets..."
+                onkeydown="if(event.key==='Enter') sendMessage()">
             <button onclick="sendMessage()">Send</button>
         </div>
     </div>
@@ -75,19 +161,41 @@
                 document.getElementById('messages').innerHTML += `<div class="msg-bot"><b>Bot:</b> ${message.getMessage()}</div>`;
                 scrollToBottom();
             },
-            onConnectionStatusChanged: (status) => console.log("Status:", status)
+            onConnectionStatusChanged: function(status) {
+                console.log('Status:', status);
+                if (status === IMI.ICConnectionStatus.Connected) {
+                    var savedThread = localStorage.getItem('active_thread_id');
+                    if (savedThread) {
+                        activeThread = new IMI.ICThread();
+                        activeThread.setId(savedThread);
+                        loadHistory(savedThread);
+                    }
+                }
+            }
         });
+
+        function loadHistory(threadId) {
+            IMI.ICMessaging.getInstance().fetchMessages(threadId, new Date(), 20, {
+                onSuccess: function(msgs) {
+                    document.getElementById('messages').innerHTML = '';
+                    msgs.reverse().forEach(function(m) {
+                        var isUser = m.getOutgoing();
+                        document.getElementById('messages').innerHTML += `<div class="${isUser ? 'msg-user' : 'msg-bot'}"><b>${isUser ? 'You' : 'Bot'}:</b> ${m.getMessage()}</div>`;
+                    });
+                    scrollToBottom();
+                },
+                onFailure: function(err) { console.error('fetchMessages error:', err); }
+            });
+        }
 
         function initChat() {
             if (IMI.IMIconnect.isRegistered()) {
                 IMI.IMIconnect._updatePolicyCheck({
-                    onSuccess: () => { if(IMI.IMIconnect.isRTEnabled) IMI.ICMessaging.getInstance().connect(); }
+                    onSuccess: () => { if (IMI.IMIconnect.isRTEnabled) IMI.ICMessaging.getInstance().connect(); }
                 });
             } else {
                 var deviceId = IMI.ICDeviceProfile.getDefaultDeviceId();
-                var userId = 'user_' + Math.random().toString(36).substr(2, 9);
-                // FIX: Pass userId as a simple string
-                var profile = new IMI.ICDeviceProfile(deviceId, userId);
+                var profile = new IMI.ICDeviceProfile(deviceId, JSON.stringify({ id: deviceId }));
                 IMI.IMIconnect.register(profile, {
                     onSuccess: () => IMI.ICMessaging.getInstance().connect()
                 });
@@ -117,7 +225,7 @@
                 thread.setTitle("Support Chat");
                 thread.setType(IMI.ICThreadType.Conversation);
                 IMI.ICMessaging.getInstance().createThread(thread, {
-                    onSuccess: (newThread) => { activeThread = newThread; publishMessage(text, activeThread); }
+                    onSuccess: (newThread) => { activeThread = newThread; localStorage.setItem('active_thread_id', newThread.getId()); publishMessage(text, activeThread); }
                 });
             }
         }
@@ -131,4 +239,5 @@
         window.onbeforeunload = () => IMI.IMIconnect.shutdown();
     </script>
 </body>
+
 </html>
