@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Assets Migration and Creation Agent</title>
+    <title>Asset Ingestion Agent</title>
     <style>
         :root {
             --cisco-blue: #005073;
@@ -102,6 +102,43 @@
             cursor: pointer;
         }
 
+        /* Hero Section */
+        #hero {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        #hero .banner {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        #hero .banner img {
+            width: 48%;
+            max-height: 280px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #hero h1 {
+            color: var(--cisco-blue);
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        #hero p {
+            color: #444;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
         /* Chat Bubble */
         #chat-bubble {
             position: fixed;
@@ -122,6 +159,15 @@
 </head>
 
 <body>
+    <div id="hero">
+        <div class="banner">
+            <img src="https://qaemailmedia.s3.amazonaws.com/9edd1f6c-1514-4579-8a5d-7283d73855a4/1000069917_2152925674315440.jpg" alt="Banner 1">
+            <img src="https://qaemailmedia.s3.amazonaws.com/9edd1f6c-1514-4579-8a5d-7283d73855a4/IMG_7144_2152916663418472.jpeg" alt="Banner 2">
+        </div>
+        <h1>Asset Ingestion Agent</h1>
+        <p>Hello! This is femacias assistant. I am here to help you navigate the process of registering or migrating your messaging programs. To get started, are you looking to register a new short code, a new 10 DLC, or are you looking to migrate an existing short code?</p>
+    </div>
+
     <div id="chat-bubble" onclick="toggleChat()">
         <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
             <path
@@ -164,6 +210,9 @@
 
         function renderHistory() {
             var history = JSON.parse(localStorage.getItem('chat_messages') || '[]');
+            if (history.length === 0) {
+                document.getElementById('messages').innerHTML += `<div class="msg-bot"><b>Bot:</b> Hello! This is femacias assistant. I am here to help you navigate the process of registering or migrating your messaging programs. To get started, are you looking to register a new short code, a new 10 DLC, or are you looking to migrate an existing short code?</div>`;
+            }
             history.forEach(function(m) {
                 var cls = m.sender === 'You' ? 'msg-user' : 'msg-bot';
                 document.getElementById('messages').innerHTML += `<div class="${cls}"><b>${m.sender}:</b> ${m.text}</div>`;
