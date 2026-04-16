@@ -4,9 +4,9 @@ Lambda function to process Webex file attachments and query the Circuit AI API.
 Compatible with Python 3.12 on AWS Lambda.
 
 Required Lambda Layers (public ARNs - us-east-1):
-  - Pillow:    arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:10
-  - requests:  arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-requests:22
-  - pypdf:     not available as public layer — package in a custom layer or deployment zip
+  - Pillow:   arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:10
+  - requests: arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-requests:22
+  - PyMuPDF:  arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-PyMuPDF:15
 
 Required IAM permissions:
   - ssm:GetParameters on the /webex-gcs/* parameter paths
@@ -26,8 +26,8 @@ from io import BytesIO
 
 import boto3
 import requests
+import fitz  # PyMuPDF
 from PIL import Image
-from pypdf import PdfReader
 
 # Configure logging
 logger = logging.getLogger()
@@ -148,19 +148,18 @@ def convert_file_to_images(file_content: bytes, content_type: str) -> tuple[list
     """
     Converts file bytes to a list of PIL Images.
     Supports image/* and application/pdf content types.
+    PDF pages are rendered at 200 DPI using PyMuPDF regardless of content type.
     Returns (images, None) on success or (None, error_response) on failure.
     """
     if content_type.startswith("image/"):
         return [Image.open(BytesIO(file_content))], None
     elif content_type == "application/pdf":
-        reader = PdfReader(BytesIO(file_content))
+        pdf = fitz.open(stream=file_content, filetype="pdf")
         images = []
-        for page in reader.pages:
-            for img_obj in page.images:
-                images.append(Image.open(BytesIO(img_obj.data)))
-        if not images:
-            logger.error("No images found in PDF")
-            return None, build_response(400, {'error': 'No images found in PDF'})
+        for page in pdf:
+            pix = page.get_pixmap(dpi=200)
+            images.append(Image.open(BytesIO(pix.tobytes("png"))))
+        pdf.close()
         return images, None
     else:
         logger.error(f"Unsupported file type: {content_type}")
