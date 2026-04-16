@@ -169,18 +169,21 @@ def convert_file_to_images(file_content: bytes, content_type: str) -> tuple[list
 def build_circuit_payload(images: list, query_system: str, query_msg: str, app_key: str) -> dict:
     """
     Builds the Circuit API request payload from a list of PIL images.
-    Each image is base64-encoded as PNG and included as an image_url content block.
+    Each image is resized to max 1024px, compressed as JPEG (quality 85),
+    and base64-encoded to minimize payload size and encoding time.
     """
     image_content = []
     for i, image in enumerate(images):
+        image = image.convert("RGB")
+        image.thumbnail((1024, 1024), Image.LANCZOS)
         buffer = BytesIO()
-        image.save(buffer, format="PNG")
+        image.save(buffer, format="JPEG", quality=85, optimize=True)
         b64_string = base64.b64encode(buffer.getvalue()).decode("utf-8")
         logger.info(f"Page {i + 1}: encoded ({len(b64_string)} chars)")
         image_content.append({
             "type": "image_url",
             "image_url": {
-                "url": f"data:image/png;base64,{b64_string}",
+                "url": f"data:image/jpeg;base64,{b64_string}",
                 "detail": "high"
             }
         })
