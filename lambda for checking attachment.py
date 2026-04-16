@@ -1,20 +1,42 @@
+"""
+Lambda function to process Webex file attachments and query the Circuit AI API.
+
+Compatible with Python 3.12 on AWS Lambda.
+
+Required Lambda Layers (public ARNs - us-east-1):
+  - Pillow:    arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:9
+  - requests:  arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-requests:8
+  - pdf2image: arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-pdf2image:1
+
+Required IAM permissions:
+  - ssm:GetParameters on the /webex-gcs/* parameter paths
+
+Required SSM Parameters (/webex-gcs/):
+  - webex-token
+  - circuit-app-key
+  - circuit-basicApi-clientId
+  - circuit-basicApi-clientSecret
+"""
+
 import json
-import boto3
-import requests
 import re
 import base64
 import logging
 from io import BytesIO
-from datetime import datetime
+
+import boto3
+import requests
+from PIL import Image
 from pdf2image import convert_from_bytes
 
 # Configure logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# Initialize SSM client
+# SSM client — initialized at module level for connection reuse across warm invocations
 ssm_client = boto3.client('ssm')
 
+# Constants
 CIRCUIT_TOKEN_URL = "https://id.cisco.com/oauth2/default/v1/token"
 CIRCUIT_API_URL = "https://chat-ai.cisco.com/openai/deployments/gpt-5-nano/chat/completions"
 REQUIRED_FIELDS = ['fileUrl', 'querySystem', 'queryMsg']
@@ -25,8 +47,13 @@ RESPONSE_HEADERS = {
 }
 
 
-def lambda_handler(event, context):
+# =============================================================================
+# Handler
+# =============================================================================
+
+def lambda_handler(event: dict, context: object) -> dict:
     """
+    Entry point for the Lambda function.
     Downloads a file from Webex, converts it to base64 images,
     and sends it to the Circuit API for processing.
     """
@@ -37,36 +64,32 @@ def lambda_handler(event, context):
         if error:
             return error
 
-        file_url = body['fileUrl']
-        query_msg = body['queryMsg']
-        query_system = body['querySystem']
-
         credentials = get_credentials()
 
-        download_result = download_file(file_url, credentials['webex_token'])
+        download_result = download_file(body['fileUrl'], credentials['webex_token'])
         if not download_result['success']:
             logger.error(f"Download failed: {download_result['error']}")
             return build_response(500, {'error': f"Failed to download file: {download_result['error']}"})
 
-        file_content = download_result['content']
-        content_type = download_result['content_type']
-        content_length = download_result['content_length']
         file_name = download_result['filename']
-
         if not file_name:
             logger.error("No filename found in Content-Disposition header")
             return build_response(400, {'error': 'No filename found in Content-Disposition header'})
 
-        images, error = convert_file_to_images(file_content, content_type)
+        images, error = convert_file_to_images(download_result['content'], download_result['content_type'])
         if error:
             return error
 
-        payload = build_circuit_payload(images, query_system, query_msg, credentials['circuit_app_key'])
+        payload = build_circuit_payload(images, body['querySystem'], body['queryMsg'], credentials['circuit_app_key'])
 
-        circuit_token_result = circuit_api_token(CIRCUIT_TOKEN_URL, credentials['circuit_basicApi_clientId'], credentials['circuit_basicApi_clientSecret'])
+        token_result = circuit_api_token(CIRCUIT_TOKEN_URL, credentials['circuit_basicApi_clientId'], credentials['circuit_basicApi_clientSecret'])
+        if not token_result['success']:
+            logger.error(f"Token retrieval failed: {token_result['error']}")
+            return build_response(500, {'error': f"Failed to obtain Circuit token: {token_result['error']}"})
+
         api_headers = {
             "Content-Type": "application/json",
-            "api-key": circuit_token_result['access_token']
+            "api-key": token_result['access_token']
         }
 
         result = circuit_api(CIRCUIT_API_URL, api_headers, payload)
@@ -76,8 +99,8 @@ def lambda_handler(event, context):
                 'message': 'File processed successfully',
                 'circuitResponse': result['circuitResponse'],
                 'fileName': file_name,
-                'contentType': content_type,
-                'contentLength': content_length
+                'contentType': download_result['content_type'],
+                'contentLength': download_result['content_length']
             })
         else:
             logger.error(f"Circuit API call failed: {result['error']}")
@@ -91,7 +114,11 @@ def lambda_handler(event, context):
         return build_response(500, {'error': 'Internal server error'})
 
 
-def parse_event_body(event):
+# =============================================================================
+# Request parsing
+# =============================================================================
+
+def parse_event_body(event: dict) -> tuple[dict | None, dict | None]:
     """
     Parses and validates the Lambda event body.
     Returns (body, None) on success or (None, error_response) on failure.
@@ -113,28 +140,29 @@ def parse_event_body(event):
     return body, None
 
 
-def convert_file_to_images(file_content, content_type):
+# =============================================================================
+# File processing
+# =============================================================================
+
+def convert_file_to_images(file_content: bytes, content_type: str) -> tuple[list | None, dict | None]:
     """
-    Converts file content to a list of PIL images.
+    Converts file bytes to a list of PIL Images.
     Supports image/* and application/pdf content types.
     Returns (images, None) on success or (None, error_response) on failure.
     """
     if content_type.startswith("image/"):
-        from PIL import Image
-        images = [Image.open(BytesIO(file_content))]
+        return [Image.open(BytesIO(file_content))], None
     elif content_type == "application/pdf":
-        images = convert_from_bytes(file_content, dpi=200)
+        return convert_from_bytes(file_content, dpi=200), None
     else:
         logger.error(f"Unsupported file type: {content_type}")
         return None, build_response(400, {'error': f"Unsupported file type: {content_type}"})
 
-    return images, None
 
-
-def build_circuit_payload(images, query_system, query_msg, app_key):
+def build_circuit_payload(images: list, query_system: str, query_msg: str, app_key: str) -> dict:
     """
-    Builds the Circuit API payload from a list of PIL images and query parameters.
-    Each image is base64-encoded as PNG and included as image_url content.
+    Builds the Circuit API request payload from a list of PIL images.
+    Each image is base64-encoded as PNG and included as an image_url content block.
     """
     image_content = []
     for i, image in enumerate(images):
@@ -160,18 +188,11 @@ def build_circuit_payload(images, query_system, query_msg, app_key):
     }
 
 
-def build_response(status_code, body):
-    """
-    Builds a standard Lambda HTTP response.
-    """
-    return {
-        'statusCode': status_code,
-        'headers': RESPONSE_HEADERS,
-        'body': json.dumps(body)
-    }
+# =============================================================================
+# HTTP helpers
+# =============================================================================
 
-
-def download_file(url, webex_token):
+def download_file(url: str, webex_token: str) -> dict:
     """
     Downloads a file from the given URL using a Webex Bearer token.
     Returns a dict with success, content, content_type, content_length, and filename.
@@ -188,9 +209,7 @@ def download_file(url, webex_token):
 
         content_type = response.headers.get('Content-Type', 'application/octet-stream')
         content_length = response.headers.get('Content-Length', '0')
-        content_disposition = response.headers.get('Content-Disposition', '')
-        filename = extract_filename_from_content_disposition(content_disposition)
-
+        filename = extract_filename_from_content_disposition(response.headers.get('Content-Disposition', ''))
         file_content = b''.join(chunk for chunk in response.iter_content(chunk_size=8192) if chunk)
 
         logger.info(f"Downloaded {len(file_content)} bytes — type: {content_type}, file: {filename}")
@@ -211,9 +230,9 @@ def download_file(url, webex_token):
         return {'success': False, 'error': str(e)}
 
 
-def circuit_api_token(token_url, client_id, client_secret):
+def circuit_api_token(token_url: str, client_id: str, client_secret: str) -> dict:
     """
-    Obtains an OAuth2 access token from the Circuit identity provider.
+    Obtains an OAuth2 client_credentials access token from the Circuit identity provider.
     Returns a dict with success and access_token.
     """
     try:
@@ -224,7 +243,8 @@ def circuit_api_token(token_url, client_id, client_secret):
                 "grant_type": "client_credentials",
                 "client_id": client_id,
                 "client_secret": client_secret
-            }
+            },
+            timeout=10
         )
         if response.status_code in [200, 201]:
             logger.info("Circuit token obtained successfully")
@@ -238,13 +258,13 @@ def circuit_api_token(token_url, client_id, client_secret):
         return {'success': False, 'error': str(e)}
 
 
-def circuit_api(api_url, api_headers, payload):
+def circuit_api(api_url: str, api_headers: dict, payload: dict) -> dict:
     """
     Sends the payload to the Circuit API and returns the model response.
     Returns a dict with success and circuitResponse.
     """
     try:
-        response = requests.post(api_url, headers=api_headers, json=payload)
+        response = requests.post(api_url, headers=api_headers, json=payload, timeout=60)
         if response.status_code in [200, 201]:
             logger.info("Circuit API responded successfully")
             return {'success': True, 'circuitResponse': response.json()["choices"][0]["message"]["content"]}
@@ -257,17 +277,31 @@ def circuit_api(api_url, api_headers, payload):
         return {'success': False, 'error': str(e)}
 
 
-def get_credentials():
+def build_response(status_code: int, body: dict) -> dict:
     """
-    Retrieves all credentials from AWS Systems Manager Parameter Store.
+    Builds a standard Lambda HTTP response dict.
+    """
+    return {
+        'statusCode': status_code,
+        'headers': RESPONSE_HEADERS,
+        'body': json.dumps(body)
+    }
+
+
+# =============================================================================
+# AWS helpers
+# =============================================================================
+
+def get_credentials() -> dict:
+    """
+    Retrieves all required credentials from AWS Systems Manager Parameter Store.
+    Raises an exception if retrieval fails.
     """
     try:
         response = ssm_client.get_parameters(
             Names=[
-                '/webex-gcs/access-key',
-                '/webex-gcs/secret-key',
-                '/webex-gcs/circuit-app-key',
                 '/webex-gcs/webex-token',
+                '/webex-gcs/circuit-app-key',
                 '/webex-gcs/circuit-basicApi-clientId',
                 '/webex-gcs/circuit-basicApi-clientSecret'
             ],
@@ -277,11 +311,7 @@ def get_credentials():
         credentials = {}
         for param in response['Parameters']:
             name = param['Name']
-            if name == '/webex-gcs/access-key':
-                credentials['gcs_access_key'] = param['Value']
-            elif name == '/webex-gcs/secret-key':
-                credentials['gcs_secret_key'] = param['Value']
-            elif name == '/webex-gcs/webex-token':
+            if name == '/webex-gcs/webex-token':
                 credentials['webex_token'] = param['Value']
             elif name == '/webex-gcs/circuit-app-key':
                 credentials['circuit_app_key'] = param['Value']
@@ -298,9 +328,10 @@ def get_credentials():
         raise
 
 
-def extract_filename_from_content_disposition(content_disposition):
+def extract_filename_from_content_disposition(content_disposition: str) -> str | None:
     """
-    Extracts the filename from a Content-Disposition header value.
+    Extracts the filename value from a Content-Disposition header string.
+    Returns None if no filename is found.
     """
     match = re.search(r'filename="?([^"]+)"?', content_disposition, re.IGNORECASE)
     return match.group(1) if match else None
