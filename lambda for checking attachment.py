@@ -6,7 +6,7 @@ Compatible with Python 3.12 on AWS Lambda.
 Required Lambda Layers (public ARNs - us-east-1):
   - Pillow:    arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:10
   - requests:  arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-requests:22
-  - pdf2image: arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-pdf2image:1
+  - pypdf:     not available as public layer — package in a custom layer or deployment zip
 
 Required IAM permissions:
   - ssm:GetParameters on the /webex-gcs/* parameter paths
@@ -27,7 +27,7 @@ from io import BytesIO
 import boto3
 import requests
 from PIL import Image
-from pdf2image import convert_from_bytes
+from pypdf import PdfReader
 
 # Configure logging
 logger = logging.getLogger()
@@ -153,7 +153,15 @@ def convert_file_to_images(file_content: bytes, content_type: str) -> tuple[list
     if content_type.startswith("image/"):
         return [Image.open(BytesIO(file_content))], None
     elif content_type == "application/pdf":
-        return convert_from_bytes(file_content, dpi=200), None
+        reader = PdfReader(BytesIO(file_content))
+        images = []
+        for page in reader.pages:
+            for img_obj in page.images:
+                images.append(Image.open(BytesIO(img_obj.data)))
+        if not images:
+            logger.error("No images found in PDF")
+            return None, build_response(400, {'error': 'No images found in PDF'})
+        return images, None
     else:
         logger.error(f"Unsupported file type: {content_type}")
         return None, build_response(400, {'error': f"Unsupported file type: {content_type}"})
