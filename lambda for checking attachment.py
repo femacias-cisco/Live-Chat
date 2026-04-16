@@ -4,8 +4,8 @@ Lambda function to process Webex file attachments and query the Circuit AI API.
 Compatible with Python 3.12 on AWS Lambda.
 
 Required Lambda Layers (public ARNs - us-east-1):
-  - Pillow:    arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:9
-  - requests:  arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-requests:8
+  - Pillow:    arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:10
+  - requests:  arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-requests:22
   - pdf2image: arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-pdf2image:1
 
 Required IAM permissions:
