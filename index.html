@@ -1,81 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asset Ingestion Agent</title>
     <style>
-        :root {
-            --cisco-blue: #005073;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-        }
-
-        /* Hero Section */
-        #hero {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 20px;
-            text-align: center;
-        }
-
-        #hero .banner {
+            background-color: #f0f2f5;
             display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            flex: 1;
+            max-width: 900px;
+            width: 100%;
+            margin: 30px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #00bceb, #005073);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
             gap: 15px;
+        }
+
+        .chat-header .avatar {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            font-size: 24px;
         }
 
-        #hero .banner img {
-            width: 48%;
-            max-height: 280px;
-            object-fit: cover;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        .chat-header .title h2 { font-size: 20px; }
+        .chat-header .title p { font-size: 13px; opacity: 0.85; }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 200px;
+            max-height: 350px;
         }
 
-        #hero h1 {
-            color: var(--cisco-blue);
-            font-size: 2rem;
-            margin-bottom: 15px;
+        .message { display: flex; gap: 10px; align-items: flex-start; }
+        .message.bot { flex-direction: row; }
+        .message.user { flex-direction: row-reverse; }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
-        #hero p {
-            color: #444;
-            font-size: 1.05rem;
-            line-height: 1.7;
-            max-width: 700px;
-            margin: 0 auto;
+        .bot .message-bubble {
+            background: #f0f2f5;
+            color: #333;
+            border-bottom-left-radius: 4px;
         }
 
-        .qr {
-            cursor: pointer;
-            display: block;
-            margin: 50px auto;
+        .user .message-bubble {
+            background: linear-gradient(135deg, #00bceb, #005073);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: #e0f7ff;
+            flex-shrink: 0;
         }
     </style>
 </head>
-
 <body>
-    <a href="sms:phoenix_customer_services_vqideog5_agent@rbm.goog?body=START" target="_blank">
-        <img src="https://qaemailmedia.s3.amazonaws.com/0f1d1f7e-b82a-4c7d-95ff-7fbffe3469ca/qr-code_7981601442126517.png" class="qr" width="200">
-    </a>
 
-    <div id="hero">
-        <div class="banner">
-            <img src="https://qaemailmedia.s3.amazonaws.com/9edd1f6c-1514-4579-8a5d-7283d73855a4/1000069917_2152925674315440.jpg" alt="Banner 1">
-            <img src="https://qaemailmedia.s3.amazonaws.com/9edd1f6c-1514-4579-8a5d-7283d73855a4/IMG_7144_2152916663418472.jpeg" alt="Banner 2">
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="avatar">🤖</div>
+        <div class="title">
+            <h2>Asset Ingestion Agent</h2>
+            <p>Hello! I am here to help you navigate the process of registering or migrating your messaging programs.</p>
         </div>
-        <h1>Asset Ingestion Agent</h1>
-        <p>Hello! This is femacias assistant. I am here to help you navigate the process of registering or migrating your messaging programs. To get started, are you looking to register a new short code, a new 10 DLC, or are you looking to migrate an existing short code?</p>
     </div>
 
-    <div id="divicw" data-bind="54730038-BEFA-49FD-B34A-6C55280C72B8" data-org="" data-guid="a3ec788b-e9ef-4273-966f-b09ffa3c4e46"></div>
-    <script>var i={t:function(){try{var e=document.getElementById("divicw"),t=document.createElement("script");t.src="https://media.imi.chat/widget/js/imichatinit.js?t="+new Date().toISOString(),e.insertAdjacentElement("afterend",t),t.addEventListener("load",function(){console.log(new Date().toISOString(),"Livechat script loaded successfully!")}),t.addEventListener("error",function(){console.log(new Date().toISOString(),"Error loading Livechat script");i.o(e)})}catch(e){console.error(e)}},o:function(e){e.insertAdjacentHTML("afterend",'<iframe id="tls_al_frm" frameborder="0" style="overflow:hidden;height:208px;width:394px;position:fixed;display:block;right:48px;bottom:12px;z-index:99999;display:none;"></iframe>');var t=document.getElementById("tls_al_frm"),n=t.contentWindow,d=n.document;d.open();d.write("<!doctype html><html><head><meta charset='utf-8'><title>Untitled Document</title><style>body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#99a0b0;font-size:14px}.popover__content{background-color:#fbfbfe;padding:1.5rem;border-radius:5px;width:300px;box-shadow:0 2px 5px 0 rgba(0,0,0,0.26);position:relative}.popover__message{font-weight:600;color:#56627c;font-size:16px}.pull-left{float:left}.clearfix{clear:both}.hdr-txt{width:218px;margin-top:3px}.para-txt a{text-decoration:none;color:#005cde}.close-btn{position:absolute;right:15px;top:15px}.close-btn a{text-decoration:none;font-weight:400;color:#56627c;font-size:16px}</style></head><body><div class='popover__content'><div class='close-btn'><a href='#' onclick='closeTLSAlert()'>X</a></div><div class='popover__message'><div class='pull-left hdr-txt'>This browser version is not supported on LiveChat.</div></div><div class='clearfix'></div><p class='para-txt'>Please update your browser to the latest version and re-open the website to access the widget.</p></div><script>function closeTLSAlert(){window.parent.postMessage({key:'close_tls_alert',value:'close_tls_alert',action:'close_tls_alert'},'*');}<\/script></body></html>");d.close();t.style.display='block';window.addEventListener('message',function(e){'close_tls_alert'===e.data.action&&i.s()})},s:function(){var e=document.getElementById('tls_al_frm');e&&e.remove()}};i.t();</script>
-</body>
+    <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+            <div class="message-avatar">🤖</div>
+            <div class="message-bubble">
+                Hello! This is femacias assistant. I am here to help you navigate the process of registering or migrating your messaging programs. To get started, are you looking to register a new short code, a new 10 DLC, or are you looking to migrate an existing short code?
+            </div>
+        </div>
+    </div>
+</div>
 
+<div id="divicw" data-bind="54730038-BEFA-49FD-B34A-6C55280C72B8" data-org="" data-guid="a3ec788b-e9ef-4273-966f-b09ffa3c4e46"></div>
+<script>var i={t:function(){try{var e=document.getElementById("divicw"),t=document.createElement("script");t.src="https://media.imi.chat/widget/js/imichatinit.js?t="+new Date().toISOString(),e.insertAdjacentElement("afterend",t),t.addEventListener("load",function(){console.log(new Date().toISOString(),"Livechat script loaded successfully!")}),t.addEventListener("error",function(){console.log(new Date().toISOString(),"Error loading Livechat script");i.o(e)})}catch(e){console.error(e)}},o:function(e){e.insertAdjacentHTML("afterend",'<iframe id="tls_al_frm" frameborder="0" style="overflow:hidden;height:208px;width:394px;position:fixed;display:block;right:48px;bottom:12px;z-index:99999;display:none;"></iframe>');var t=document.getElementById("tls_al_frm"),n=t.contentWindow,d=n.document;d.open();d.write("<!doctype html><html><head><meta charset='utf-8'><title>Untitled Document</title><style>body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#99a0b0;font-size:14px}.popover__content{background-color:#fbfbfe;padding:1.5rem;border-radius:5px;width:300px;box-shadow:0 2px 5px 0 rgba(0,0,0,0.26);position:relative}.popover__message{font-weight:600;color:#56627c;font-size:16px}.pull-left{float:left}.clearfix{clear:both}.hdr-txt{width:218px;margin-top:3px}.para-txt a{text-decoration:none;color:#005cde}.close-btn{position:absolute;right:15px;top:15px}.close-btn a{text-decoration:none;font-weight:400;color:#56627c;font-size:16px}</style></head><body><div class='popover__content'><div class='close-btn'><a href='#' onclick='closeTLSAlert()'>X</a></div><div class='popover__message'><div class='pull-left hdr-txt'>This browser version is not supported on LiveChat.</div></div><div class='clearfix'></div><p class='para-txt'>Please update your browser to the latest version and re-open the website to access the widget.</p></div><script>function closeTLSAlert(){window.parent.postMessage({key:'close_tls_alert',value:'close_tls_alert',action:'close_tls_alert'},'*');}<\/script></body></html>");d.close();t.style.display='block';window.addEventListener('message',function(e){'close_tls_alert'===e.data.action&&i.s()})},s:function(){var e=document.getElementById('tls_al_frm');e&&e.remove()}};i.t();</script>
+
+</body>
 </html>
