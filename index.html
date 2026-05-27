@@ -3,130 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asset Ingestion Agent</title>
+    <title>Asset Provisioning</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        @font-face {
+            font-family: "CiscoSansTT";
+            src: url("https://www.cisco.com/c/dam/assets/fonts/cisco-sans/CiscoSansTTRegular.woff") format("woff"),
+                 url("https://www.cisco.com/c/dam/assets/fonts/cisco-sans/CiscoSansTTRegular.ttf") format("truetype");
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: "CiscoSansTT";
+            src: url("https://www.cisco.com/c/dam/assets/fonts/cisco-sans/CiscoSansTTBold.woff") format("woff"),
+                 url("https://www.cisco.com/c/dam/assets/fonts/cisco-sans/CiscoSansTTBold.ttf") format("truetype");
+            font-weight: 700;
         }
 
-        body {
-            background-color: #f0f2f5;
-            display: flex;
-            flex-direction: column;
+        :root {
+            --brand-primary: #4f52bd;
+            --brand-dark: #333579;
+            --brand-darkest: #181826;
+            --brand-success: #007b58;
+            --text-primary: #0D0D0D;
+            --text-secondary: #474D5A;
+            --text-muted: #656E81;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f6f8;
+            --bg-tertiary: #F0F1F5;
+            --border: #DADDE2;
+            --shadow: 0 .4rem .8rem 0 rgba(23, 40, 52, .08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: "CiscoSansTT", "Segoe UI", sans-serif;
+            font-size: 16px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             min-height: 100vh;
         }
 
-        .chat-container {
-            flex: 1;
-            max-width: 900px;
-            width: 100%;
-            margin: 30px auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        /* ── Navbar ── */
+        .navbar {
+            background: var(--brand-darkest);
+            height: 60px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            padding: 0 2.4rem;
+            gap: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,.3);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+        }
+
+        .navbar-logo {
+            height: 36px;
+        }
+
+        .navbar-portal-logo {
+            height: 28px;
+            margin-left: 1.2rem;
+        }
+
+        /* ── Page layout ── */
+        .page-content {
+            max-width: 960px;
+            margin: 3.2rem auto;
+            padding: 0 2.4rem;
+        }
+
+        /* ── Hero card ── */
+        .hero-card {
+            background: var(--bg-primary);
+            border-radius: .8rem;
+            box-shadow: var(--shadow);
             overflow: hidden;
+            margin-bottom: 2.4rem;
         }
 
-        .chat-header {
-            background: linear-gradient(135deg, #00bceb, #005073);
-            color: white;
-            padding: 20px 25px;
+        .hero-body {
+            padding: 2.4rem;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 1.2rem;
         }
 
-        .chat-header .avatar {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
+        .hero-body img {
+            height: 2rem;
+            flex-shrink: 0;
         }
 
-        .chat-header .title h2 { font-size: 20px; }
-        .chat-header .title p { font-size: 13px; opacity: 0.85; }
-
-        .chat-messages {
-            flex: 1;
-            padding: 25px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            min-height: 200px;
-            max-height: 350px;
+        .hero-body h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            margin: 0;
         }
 
-        .message { display: flex; gap: 10px; align-items: flex-start; }
-        .message.bot { flex-direction: row; }
-        .message.user { flex-direction: row-reverse; }
 
-        .message-bubble {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 13px;
+
+        /* ── Info cards row ── */
+        .cards-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.6rem;
+            margin-bottom: 2.4rem;
+        }
+
+        .info-card {
+            background: var(--bg-primary);
+            border-radius: .8rem;
+            box-shadow: var(--shadow);
+            padding: 2rem 2.4rem;
+            border-left: 4px solid var(--brand-primary);
+            cursor: pointer;
+            transition: box-shadow .2s, transform .2s;
+        }
+
+        .info-card:hover {
+            box-shadow: 0 .8rem 1.6rem 0 rgba(23, 40, 52, .14);
+            transform: translateY(-2px);
+        }
+
+        .info-card .card-icon { font-size: 1.8rem; margin-bottom: .8rem; }
+
+        .info-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: .4rem;
+        }
+
+        .info-card p {
+            font-size: .875rem;
+            color: var(--text-muted);
             line-height: 1.5;
         }
 
-        .bot .message-bubble {
-            background: #f0f2f5;
-            color: #333;
-            border-bottom-left-radius: 4px;
+        .info-card:nth-child(2) { border-left-color: var(--brand-success); }
+        .info-card:nth-child(3) { border-left-color: #38aaf4; }
+
+        /* ── Footer ── */
+        .page-footer {
+            text-align: center;
+            padding: 2.4rem;
+            color: var(--text-muted);
+            font-size: .8125rem;
+            border-top: 1px solid var(--border);
+            margin-top: 1.6rem;
         }
 
-        .user .message-bubble {
-            background: linear-gradient(135deg, #00bceb, #005073);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            background: #e0f7ff;
-            flex-shrink: 0;
+        /* ── Responsive ── */
+        @media (max-width: 767px) {
+            .page-content { padding: 0 1.6rem; margin: 1.6rem auto; }
+            .hero-body h1 { font-size: 1.5rem; }
+            .cards-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-<div class="chat-container">
-    <div class="chat-header">
-        <div class="avatar">🤖</div>
-        <div class="title">
-            <h2>Asset Ingestion Agent</h2>
-            <p>Hello! I am here to help you navigate the process of registering or migrating your messaging programs.</p>
-        </div>
-    </div>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a class="navbar-brand" href="#">
+            <img class="navbar-logo"
+                src="https://webexcpaas.service-now.com/e9fb05451b76fd1403c61fc8b04bcb06.iix"
+                alt="Logo">
+        </a>
+    </nav>
 
-    <div class="chat-messages" id="chatMessages">
-        <div class="message bot">
-            <div class="message-avatar">🤖</div>
-            <div class="message-bubble">
-                Hello! This is femacias assistant. I am here to help you navigate the process of registering or migrating your messaging programs. To get started, are you looking to register a new short code, a new 10 DLC, or are you looking to migrate an existing short code?
+    <div class="page-content">
+
+        <!-- Hero -->
+        <div class="hero-card">
+            <div class="hero-body">
+                <img src="https://webexcpaas.service-now.com/ef8fed3d1b737550b5601138b04bcbbe.iix" alt="Portal Logo">
+                <h1>Asset Provisioning</h1>
             </div>
         </div>
-    </div>
-</div>
 
-<div id="divicw" data-bind="54730038-BEFA-49FD-B34A-6C55280C72B8" data-org="" data-guid="a3ec788b-e9ef-4273-966f-b09ffa3c4e46"></div>
-<script>var i={t:function(){try{var e=document.getElementById("divicw"),t=document.createElement("script");t.src="https://media.imi.chat/widget/js/imichatinit.js?t="+new Date().toISOString(),e.insertAdjacentElement("afterend",t),t.addEventListener("load",function(){console.log(new Date().toISOString(),"Livechat script loaded successfully!")}),t.addEventListener("error",function(){console.log(new Date().toISOString(),"Error loading Livechat script");i.o(e)})}catch(e){console.error(e)}},o:function(e){e.insertAdjacentHTML("afterend",'<iframe id="tls_al_frm" frameborder="0" style="overflow:hidden;height:208px;width:394px;position:fixed;display:block;right:48px;bottom:12px;z-index:99999;display:none;"></iframe>');var t=document.getElementById("tls_al_frm"),n=t.contentWindow,d=n.document;d.open();d.write("<!doctype html><html><head><meta charset='utf-8'><title>Untitled Document</title><style>body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#99a0b0;font-size:14px}.popover__content{background-color:#fbfbfe;padding:1.5rem;border-radius:5px;width:300px;box-shadow:0 2px 5px 0 rgba(0,0,0,0.26);position:relative}.popover__message{font-weight:600;color:#56627c;font-size:16px}.pull-left{float:left}.clearfix{clear:both}.hdr-txt{width:218px;margin-top:3px}.para-txt a{text-decoration:none;color:#005cde}.close-btn{position:absolute;right:15px;top:15px}.close-btn a{text-decoration:none;font-weight:400;color:#56627c;font-size:16px}</style></head><body><div class='popover__content'><div class='close-btn'><a href='#' onclick='closeTLSAlert()'>X</a></div><div class='popover__message'><div class='pull-left hdr-txt'>This browser version is not supported on LiveChat.</div></div><div class='clearfix'></div><p class='para-txt'>Please update your browser to the latest version and re-open the website to access the widget.</p></div><script>function closeTLSAlert(){window.parent.postMessage({key:'close_tls_alert',value:'close_tls_alert',action:'close_tls_alert'},'*');}<\/script></body></html>");d.close();t.style.display='block';window.addEventListener('message',function(e){'close_tls_alert'===e.data.action&&i.s()})},s:function(){var e=document.getElementById('tls_al_frm');e&&e.remove()}};i.t();</script>
+        <!-- Ticket type cards -->
+        <div class="cards-row">
+            <div class="info-card">
+                <div class="card-icon">📋</div>
+                <h3>New Short Code</h3>
+                <p>Register a new short code for your messaging program with full compliance support.</p>
+            </div>
+            <div class="info-card">
+                <div class="card-icon">📱</div>
+                <h3>10 DLC Registration</h3>
+                <p>Set up a new 10-digit long code for A2P messaging with carrier registration.</p>
+            </div>
+            <div class="info-card">
+                <div class="card-icon">🔄</div>
+                <h3>Migrate Existing</h3>
+                <p>Migrate your existing short code to a new platform or carrier seamlessly.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+        © 2025 Cisco Systems, Inc. All rights reserved.
+    </footer>
+
+    <!-- IMI Widget -->
+    <div id="divicw" data-bind="54730038-BEFA-49FD-B34A-6C55280C72B8" data-org="" data-guid="a3ec788b-e9ef-4273-966f-b09ffa3c4e46"></div>
+    <script>var i={t:function(){try{var e=document.getElementById("divicw"),t=document.createElement("script");t.src="https://media.imi.chat/widget/js/imichatinit.js?t="+new Date().toISOString(),e.insertAdjacentElement("afterend",t),t.addEventListener("load",function(){console.log(new Date().toISOString(),"Livechat script loaded successfully!")}),t.addEventListener("error",function(){console.log(new Date().toISOString(),"Error loading Livechat script");i.o(e)})}catch(e){console.error(e)}},o:function(e){e.insertAdjacentHTML("afterend",'<iframe id="tls_al_frm" frameborder="0" style="overflow:hidden;height:208px;width:394px;position:fixed;display:block;right:48px;bottom:12px;z-index:99999;display:none;"></iframe>');var t=document.getElementById("tls_al_frm"),n=t.contentWindow,d=n.document;d.open();d.write("<!doctype html><html><head><meta charset='utf-8'><title>Untitled Document</title><style>body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#99a0b0;font-size:14px}.popover__content{background-color:#fbfbfe;padding:1.5rem;border-radius:5px;width:300px;box-shadow:0 2px 5px 0 rgba(0,0,0,0.26);position:relative}.popover__message{font-weight:600;color:#56627c;font-size:16px}.pull-left{float:left}.clearfix{clear:both}.hdr-txt{width:218px;margin-top:3px}.para-txt a{text-decoration:none;color:#005cde}.close-btn{position:absolute;right:15px;top:15px}.close-btn a{text-decoration:none;font-weight:400;color:#56627c;font-size:16px}</style></head><body><div class='popover__content'><div class='close-btn'><a href='#' onclick='closeTLSAlert()'>X</a></div><div class='popover__message'><div class='pull-left hdr-txt'>This browser version is not supported on LiveChat.</div></div><div class='clearfix'></div><p class='para-txt'>Please update your browser to the latest version and re-open the website to access the widget.</p></div><script>function closeTLSAlert(){window.parent.postMessage({key:'close_tls_alert',value:'close_tls_alert',action:'close_tls_alert'},'*');}<\/script></body></html>");d.close();t.style.display='block';window.addEventListener('message',function(e){'close_tls_alert'===e.data.action&&i.s()})},s:function(){var e=document.getElementById('tls_al_frm');e&&e.remove()}};i.t();</script>
 
 </body>
 </html>
