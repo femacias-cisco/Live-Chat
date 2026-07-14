@@ -1,0 +1,187 @@
+@font-face {
+    font-family: "CiscoSansTT";
+    src: url("https://www.cisco.com/c/dam/assets/fonts/cisco-sans/CiscoSansTTRegular.woff") format("woff"),
+         url("https://www.cisco.com/c/dam/assets/fonts/cisco-sans/CiscoSansTTRegular.ttf") format("truetype");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "CiscoSansTT";
+    src: url("https://www.cisco.com/c/dam/assets/fonts/cisco-sans/CiscoSansTTBold.woff") format("woff"),
+         url("https://www.cisco.com/c/dam/assets/fonts/cisco-sans/CiscoSansTTBold.ttf") format("truetype");
+    font-weight: 700;
+}
+
+:root {
+    --brand-primary: #4f52bd;
+    --brand-darkest: #181826;
+    --brand-success: #007b58;
+    --text-primary: #0d0d0d;
+    --text-muted: #656e81;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f6f6f8;
+    --border: #dadde2;
+    --shadow: 0 0.4rem 0.8rem 0 rgba(23, 40, 52, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    min-height: 100vh;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: "CiscoSansTT", "Segoe UI", sans-serif;
+    font-size: 16px;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    height: 60px;
+    padding: 0 2.4rem;
+    background: var(--brand-darkest);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.navbar-logo {
+    height: 36px;
+}
+
+.page-content {
+    width: 100%;
+    max-width: 960px;
+    margin: 3.2rem auto;
+    padding: 0 2.4rem;
+}
+
+.hero-card {
+    margin-bottom: 2.4rem;
+    overflow: hidden;
+    border-radius: 0.8rem;
+    background: var(--bg-primary);
+    box-shadow: var(--shadow);
+}
+
+.hero-body {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 2.4rem;
+}
+
+.hero-body img {
+    height: 2rem;
+    flex-shrink: 0;
+}
+
+.hero-body h1 {
+    margin: 0;
+    color: var(--brand-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.cards-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.6rem;
+    margin-bottom: 2.4rem;
+}
+
+.info-card {
+    padding: 2rem 2.4rem;
+    border-left: 4px solid var(--brand-primary);
+    border-radius: 0.8rem;
+    background: var(--bg-primary);
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.8rem 1.6rem 0 rgba(23, 40, 52, 0.14);
+}
+
+.info-card:nth-child(2) {
+    border-left-color: var(--brand-success);
+}
+
+.info-card:nth-child(3) {
+    border-left-color: #38aaf4;
+}
+
+.card-icon {
+    margin-bottom: 0.8rem;
+    font-size: 1.8rem;
+}
+
+.info-card h2 {
+    margin-bottom: 0.4rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.info-card p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.page-footer {
+    margin-top: auto;
+    padding: 2.4rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    text-align: center;
+}
+
+@media (max-width: 767px) {
+    .navbar {
+        padding: 0 1.6rem;
+    }
+
+    .page-content {
+        margin: 1.6rem auto;
+        padding: 0 1.6rem;
+    }
+
+    .hero-body {
+        padding: 1.8rem;
+    }
+
+    .hero-body h1 {
+        font-size: 1.5rem;
+    }
+
+    .cards-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .info-card {
+        transition: none;
+    }
+
+    .info-card:hover {
+        transform: none;
+    }
+}
